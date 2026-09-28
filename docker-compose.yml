@@ -1,0 +1,12 @@
+services:
+  veil:
+    build: .
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      VEIL_SEMANTIC_PROVIDER: heuristic
+      VEIL_OCR_PROVIDER: tesseract
+      VEIL_RETAIN_RAW_TEXT: "0"
+    volumes:
+      - ./outputs:/app/outputs
+      - ./data:/app/data

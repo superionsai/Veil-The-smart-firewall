@@ -1,0 +1,13 @@
+# Optional OCR backend. Install only when its ONNX Runtime dependency supports
+# your Python/architecture. Veil automatically falls back to Tesseract.
+rapidocr-onnxruntime>=1.3.24
+
+# Optional visual QR + face masking on platforms where a compatible wheel is
+# available. NOT required for the native Snapdragon/Windows ARM64 core path.
+# Live QR masking has a browser BarcodeDetector fallback.
+opencv-python-headless>=4.10,<5.0
+
+# GenieX is installed separately by scripts/setup_snapdragon.ps1 because the
+# native package targets Windows ARM64/Linux aarch64 and Qualcomm's requirements
+# should be followed for the current AI Hub release.
+# geniex

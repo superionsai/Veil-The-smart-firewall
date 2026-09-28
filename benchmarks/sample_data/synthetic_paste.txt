@@ -1,0 +1,3 @@
+OPENAI_KEY=sk-THIS_IS_A_FAKE_DEMO_TOKEN_123456789
+Project Orion acquisition estimate is confidential and must not be shared externally.
+Meeting moved to Friday.

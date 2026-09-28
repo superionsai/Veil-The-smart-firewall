@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Veil · On-device semantic privacy firewall</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">V</div>
+        <div><strong>Veil</strong><span>Local privacy firewall</span></div>
+      </div>
+      <nav>
+        <button class="nav-item active" data-tab="live"><span>◉</span> Live Shield</button>
+        <button class="nav-item" data-tab="files"><span>▣</span> File Sanitizer</button>
+        <button class="nav-item" data-tab="paste"><span>⌘</span> Quick Paste</button>
+        <button class="nav-item" data-tab="policy"><span>◇</span> Policy Studio</button>
+        <button class="nav-item" data-tab="diagnostics"><span>∿</span> Diagnostics</button>
+      </nav>
+      <div class="side-footer">
+        <div class="local-pill"><span class="dot"></span><span id="localStatus">Checking local runtime…</span></div>
+        <small>Raw OCR text is not retained by default.</small>
+      </div>
+    </aside>
+
+    <main>
+      <header class="topbar">
+        <div>
+          <h1 id="pageTitle">Live Shield</h1>
+          <p id="pageSubtitle">Share a protected Veil preview instead of your raw application window.</p>
+        </div>
+        <div class="policy-picker">
+          <label>Protection profile</label>
+          <select id="globalPolicy"></select>
+        </div>
+      </header>
+
+      <section class="tab active" id="tab-live">
+        <div class="notice danger-soft"><strong>Safe sharing rule:</strong> select the sensitive source window in Veil, then share the <strong>Veil browser tab/window</strong> in Teams/Meet/Zoom—not the original source.</div>
+        <div class="live-grid">
+          <div class="card preview-card">
+            <div class="card-head">
+              <div><h2>Protected output</h2><p>Only processed frames are rendered here; raw frames are never flashed into the preview.</p></div>
+              <div class="actions">
+                <button id="startCapture" class="primary">Protect a window</button>
+                <button id="stopCapture" class="ghost" disabled>Stop</button>
+              </div>
+            </div>
+            <div class="canvas-wrap" id="canvasWrap">
+              <canvas id="protectedCanvas"></canvas>
+              <div id="emptyPreview" class="empty-state"><div class="shield">◈</div><h3>No source selected</h3><p>Choose a screen or application window to begin local privacy filtering.</p></div>
+            </div>
+            <video id="sourceVideo" autoplay playsinline muted hidden></video>
+          </div>
+          <div class="card inspector-card">
+            <div class="card-head"><div><h2>Privacy inspector</h2><p>Why each region was blocked or warned.</p></div></div>
+            <div class="stats-row">
+              <div><span id="liveRegions">0</span><small>active masks</small></div>
+              <div><span id="liveLatency">—</span><small>frame ms</small></div>
+              <div><span id="liveChanged">—</span><small>screen changed</small></div>
+            </div>
+            <div id="regionList" class="region-list"><div class="muted-box">Detections will appear here.</div></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="tab" id="tab-files">
+        <div class="two-col">
+          <div class="card">
+            <div class="card-head"><div><h2>Sanitize a file</h2><p>PDFs are rasterized after masking so hidden text cannot be recovered by copy/select.</p></div></div>
+            <label class="dropzone" id="dropzone">
+              <input id="fileInput" type="file" accept=".pdf,.png,.jpg,.jpeg,.webp,.bmp" />
+              <div class="upload-icon">⇧</div>
+              <strong>Drop a PDF or image</strong>
+              <span>or click to choose · max 80 MB</span>
+            </label>
+            <button id="sanitizeFile" class="primary wide" disabled>Generate protected copy</button>
+            <div id="fileProgress" class="progress-text"></div>
+          </div>
+          <div class="card result-card">
+            <div class="card-head"><div><h2>Protected result</h2><p id="fileSummary">No file processed yet.</p></div><a id="downloadFile" class="button-link hidden" download>Download</a></div>
+            <div id="filePreview" class="file-preview"><div class="empty-state compact"><div class="shield">▣</div><p>Your sanitized preview appears here.</p></div></div>
+            <div id="fileDetections" class="region-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="tab" id="tab-paste">
+        <div class="two-col">
+          <div class="card">
+            <div class="card-head"><div><h2>Paste sensitive text</h2><p>Useful before sharing logs, terminal output, tickets or messages.</p></div></div>
+            <textarea id="pasteInput" rows="18" placeholder="Paste text here…\n\nExample:\nOPENAI_KEY=sk-example-replace-with-a-real-looking-token\nProject Orion acquisition discussion is confidential."></textarea>
+            <button id="sanitizeText" class="primary wide">Sanitize text</button>
+          </div>
+          <div class="card">
+            <div class="card-head"><div><h2>Safe copy</h2><p>Deterministic secrets and semantic-sensitive lines are replaced locally.</p></div><button id="copySafe" class="ghost">Copy</button></div>
+            <textarea id="pasteOutput" rows="18" readonly placeholder="Protected text will appear here."></textarea>
+            <div id="pasteDetections" class="tag-row"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="tab" id="tab-policy">
+        <div class="policy-layout">
+          <div class="card">
+            <div class="card-head"><div><h2>Natural-language policy compiler</h2><p>Turn human intent into a structured local protection policy.</p></div></div>
+            <textarea id="policyText" rows="8">Hide credentials, salary information, personal phone numbers and anything about Project Orion. QR codes should also be hidden.</textarea>
+            <div class="inline-controls">
+              <select id="policyBase"></select>
+              <button id="compilePolicy" class="primary">Compile policy</button>
+              <button id="clearCustomPolicy" class="ghost">Use preset only</button>
+            </div>
+            <div class="notice">The compiled policy is applied immediately to Live Shield, File Sanitizer and Quick Paste when “Custom Policy” is selected.</div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div><h2>Compiled policy</h2><p>Inspectable rules—no hidden agent state.</p></div></div>
+            <pre id="compiledPolicy">Compile a policy to inspect the generated JSON.</pre>
+          </div>
+        </div>
+      </section>
+
+      <section class="tab" id="tab-diagnostics">
+        <div class="diag-grid">
+          <div class="card metric-card"><span>Semantic runtime</span><strong id="diagSemantic">—</strong><small id="diagModel">—</small></div>
+          <div class="card metric-card"><span>OCR backend</span><strong id="diagOcr">—</strong><small>Local image-to-text stage</small></div>
+          <div class="card metric-card"><span>Average frame latency</span><strong id="diagLatency">—</strong><small>Rolling processed-frame window</small></div>
+          <div class="card metric-card"><span>Event-driven skip rate</span><strong id="diagSkip">—</strong><small>Frames requiring no OCR/LLM work</small></div>
+          <div class="card metric-card"><span>Privacy events</span><strong id="diagEvents">—</strong><small>Audit entries, raw text excluded by default</small></div>
+          <div class="card metric-card"><span>Semantic calls</span><strong id="diagCalls">—</strong><small>After deterministic gating + cache</small></div>
+        </div>
+        <div class="two-col">
+          <div class="card"><div class="card-head"><div><h2>Environment</h2><p>Useful screenshots for the challenge presentation.</p></div><button id="refreshDiag" class="ghost">Refresh</button></div><pre id="environmentDump">Loading…</pre></div>
+          <div class="card"><div class="card-head"><div><h2>Recent privacy events</h2><p>Only category/source/hash metadata is stored unless explicitly configured otherwise.</p></div><button id="clearAudit" class="ghost">Clear log</button></div><div id="auditList" class="region-list"></div></div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <div id="toast" class="toast"></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>
